@@ -1,6 +1,5 @@
 *.iml
 .DS_Store
-/out
 /resources
 .env
 node_modules
