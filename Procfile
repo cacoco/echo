@@ -1,0 +1,1 @@
+web: node out/echo.js
