@@ -5,11 +5,17 @@
 (def url (node/require "url"))
 (def utiljs (node/require "util"))
 
-(defn clj->js
-  "Recursively transforms ClojureScript maps into Javascript objects,
-   other ClojureScript colls into JavaScript arrays, and ClojureScript
-   keywords into JavaScript strings."
-  [x]
+(def alphanumeric "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
+
+(defn randomize [characters length]
+  (loop [acc []]
+    (if (= (count acc) length) (apply str acc)
+      (recur (conj acc (rand-nth characters))))))
+
+(defn uid []
+  (string/lower-case (apply str (repeatedly 8 #(randomize alphanumeric 4)))))
+
+(defn clj->js [x]
   (cond
     (string? x) x
     (keyword? x) (name x)
@@ -17,41 +23,18 @@
     (coll? x) (apply array (map clj->js x))
     :else x))
 
-(defn url-parse
-  "Returns a map with parsed data for the given URL."
-  [u]
+(defn url-parse [u]
   (let [raw (js->clj (.parse url u (clj->js "true")))]
     {:path (get raw "pathname")
      :query (get raw "query")}))
 
-(defn from-json
-	"Returns ClojureScript data for the given JSON string."
-	[line]
-	(js->clj (JSON/parse line)))
-
-(defn to-json
-  "Returns a JSON string from the given
-   ClojureScript data."
-  [callback & data]
-  (let [json (str (JSON/stringify (clj->js data)))]
+(defn to-json [callback & [data]]
+  (let [json (JSON/stringify (clj->js data))]
     (if (nil? callback)
       (str json "\n")
-      (.format utiljs (str callback "(%s)\n") json))))
+      (.format utiljs "%s(%s)\n" callback json))))
 
-(defn random [length]
-  "Return a random string on n characters."
-  (let [characters (apply vector "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")]
-    (loop [acc []]
-      (if (= (count acc) length) (apply str acc)
-        (recur (conj acc (rand-nth characters)))))))
-
-(defn random-string []
-  (string/lower-case (apply str (repeatedly 8 #(random 4)))))
-
-(defn env
-  "Returns the value of the environment variable k,
-   or raises if k is missing from the environment."
-  [k]
+(defn env [k]
   (let [e (js->clj (.env node/process))]
     (or (get e k) (throw (str "Missing Key: " k)))))
 

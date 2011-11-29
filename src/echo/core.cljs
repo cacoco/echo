@@ -14,19 +14,17 @@
 
 (defn write-response [request response & [data]]
   (let [headers (.headers request)
-        user-agent (.user-agent headers)
-        host (.host headers)
-        accept (.accept headers)
         callback (get data "callback")
         json (util/to-json
               callback
-              (dissoc data "callback"))]
+              (dissoc data "callback"))
+        response-headers (-> {} (assoc "Content-Type" "application/json") (assoc "Content-Length" (.length json)))]
     (log {:headers (.inspect utiljs headers "true" "null")})
-    (.writeHead response 200 {"Content-Type" "application/json", "Content-Length" (util/clj->js (.length json))})
+    (.writeHead response 200 (util/clj->js response-headers))
     (.end response json)))
 
 (defn handler [request response]
-  (let [id (util/random-string)
+  (let [id (util/uid)
         url (.url request)
         query (:query (util/url-parse url))]
     (log {:event "request" :id id :query query})
