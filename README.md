@@ -1,6 +1,6 @@
 # echo
 
-Receives data over HTTP and echoes it to std out.
+Simple Clojurescript app that echoes /GET requests back as JSON. Accepts a callback parameter.
 
 ## Usage
 
