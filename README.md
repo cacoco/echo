@@ -8,5 +8,6 @@ You will need to have the [ClojureScript Compiler](https://github.com/clojure/cl
 
 Run via start script with optional PORT parameter. If no PORT is passed the default of :9995 will be used:
 
-```./bin/start 9944
+```
+./bin/start 9944
 ```
